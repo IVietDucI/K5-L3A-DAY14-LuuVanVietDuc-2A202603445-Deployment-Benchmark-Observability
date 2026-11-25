@@ -8,8 +8,19 @@ Yêu cầu:
 """
 
 
-def verify_api_key() -> str:
-    """Dependency cho FastAPI — dùng trong /ask: Depends(verify_api_key)."""
-    # TODO: đọc header X-API-Key (gợi ý: fastapi.security.APIKeyHeader),
-    #       so sánh với settings.agent_api_key; thiếu/sai → raise HTTPException(status_code=401)
-    raise NotImplementedError("TODO: verify_api_key")
+from secrets import compare_digest
+
+from fastapi import HTTPException, Security
+from fastapi.security import APIKeyHeader
+
+from .config import settings
+
+
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+
+def verify_api_key(api_key: str | None = Security(api_key_header)) -> str:
+    expected = settings.agent_api_key
+    if not api_key or not expected or not compare_digest(api_key.encode(), expected.encode()):
+        raise HTTPException(status_code=401, detail="Invalid or missing API key")
+    return api_key

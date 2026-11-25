@@ -34,3 +34,7 @@ Thumbs.db
 # ── Docker volumes (local dev) ─────────────────────��──────
 data/
 volumes/
+
+# Part 7 generated outputs. Commit the submission copies at the repo root.
+/06-lab-complete/benchmark-observability/develop/reports/
+/06-lab-complete/benchmark-observability/production/benchmark-results/*.csv

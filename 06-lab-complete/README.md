@@ -1,7 +1,7 @@
 # Part 6 — Final Project: Production-ready AI Agent
 
 Bạn tự xây một AI agent đủ chuẩn production từ **bản khung** trong thư mục này, kết hợp mọi thứ đã học ở Part 1–5.
-Mọi file đều đã có sẵn, phần việc của bạn nằm ở các chỗ ghi `TODO`. Bản khung chạy được nhưng **chưa đạt tiêu chí nào**.
+`app/` chứa agent, `Dockerfile` và Compose dùng để chạy local, còn `railway.toml` dùng cho bản deploy.
 
 Bài chỉ được tính hoàn thành khi script chấm báo **`PASS 12/12`**:
 
@@ -84,12 +84,13 @@ Script tự khởi động agent của bạn, gọi API thật, build và chạy
 ```bash
 pip install -r requirements.txt
 cp .env.example .env
+# Điền AGENT_API_KEY=dev-key trong .env để chạy ví dụ local.
 
 # Chạy nhanh không cần Docker (cần Redis riêng nếu muốn test rate limit thật)
 AGENT_API_KEY=dev-key uvicorn app.main:app --reload
 
 # Chạy cả agent + redis
-docker compose up --build
+docker compose -p k5-day14-final up --build
 
 curl http://localhost:8000/health
 curl -X POST http://localhost:8000/ask \
