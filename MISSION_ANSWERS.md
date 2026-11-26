@@ -147,7 +147,7 @@ Result: 12/12 tiêu chí đạt · 41/41 checks passed
 🎉 PASS 12/12 — PRODUCTION READY! Deploy nào!
 ```
 
-## Tự chấm theo RUBRIC.md
+## Đối chiếu rubric
 
 | Hạng mục | Điểm tự chấm | Bằng chứng |
 |---|---:|---|
@@ -162,6 +162,7 @@ Result: 12/12 tiêu chí đạt · 41/41 checks passed
 
 ## AI log
 
-- Yêu cầu AI đối chiếu README, giáo trình PDF và rubric K5, rồi lập kế hoạch, triển khai và tự kiểm bài lab trong repo.
-- Codex viết các phần TODO của Part 6 và chạy script chấm gốc trong WSL2. Codex chạy các ví dụ để lấy mã HTTP và thực hiện eval trước và sau khi cập nhật knowledge base. Benchmark và ảnh dùng kết quả thiết bị chạy lab.
-- Có thể tái kiểm bằng các lệnh trong `CHECKPOINTS.md`, file JSON/CSV đã nộp và URL ghi trong `DEPLOYMENT.md` sau khi xác nhận deploy.
+- Tham khảo checklist K5 về môi trường chạy và cấu hình triển khai. Hướng dẫn được áp dụng vào việc chạy kiểm thử trong WSL2, tách cổng loopback và kết nối agent với Redis nội bộ trên Railway. Bốn smoke test công khai trả lần lượt `200`, `200`, `401`, `200`. [Kết quả triển khai](DEPLOYMENT.md)
+- Tham khảo cách tách liveness và readiness, xác thực API key và dùng Redis để chia sẻ trạng thái giữa các replica. Part 6 bổ sung `/health`, `/ready`, rate limit cửa sổ trượt và giữ chỗ ngân sách nguyên tử trong Redis. Kiểm tra bằng `python check_production_ready.py` trong WSL2, đạt `PASS 12/12` với `41/41` phép kiểm.
+- Tham khảo cách đọc eval theo từng câu để xác định phần ngữ cảnh còn thiếu. Kết quả v2 chỉ ra `security-02` và `scaling-03`, nên knowledge base được bổ sung nội dung về JWT và Kubernetes HPA. Chạy lại trên cùng golden dataset, v2 tăng từ 21/23 lên 23/23 và không có regression. [Eval trước sửa](reports/eval_v2.json) · [Eval sau sửa](reports/eval_v2_fixed.json)
+- Tham khảo cách kiểm soát số replica khi đo Locust và đối chiếu trace với log. Lượt đo được chạy lại với `--no-deps` và xác nhận số replica trước và sau mỗi lượt. Kết quả scaling được đối chiếu với hai CSV. Kiểm tra observability xác nhận hai alert cùng `firing` và hai trace Jaeger khớp log theo `trace_id`. [CSV một replica](benchmark-results/scale_1_stats.csv) · [CSV ba replica](benchmark-results/scale_3_stats.csv) · [Ảnh Prometheus](screenshots/prometheus-alert-firing.png)

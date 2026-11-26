@@ -27,7 +27,7 @@ Mỗi mức dùng 300 request đến cùng agent local. Percentile tính trên r
 | 50 | 98.75 | 212.6 | 355.4 | 1708.9 | 1.67% | PASS |
 | 100 | 64.22 | 694.2 | 2353.6 | 2675.2 | 0.67% | FAIL |
 
-RPS cao nhất ở concurrency 50 trong lần đo này. Khi tăng từ 50 lên 100, throughput giảm và p50 cũng tăng, phù hợp với tình trạng request phải chờ trong hệ thống khi quá nhiều request đồng thời. Số đo này chỉ cho thấy điểm nghẽn xuất hiện ở tải cao. Cần profile hoặc đo riêng tầng client, app và I/O để xác định nguyên nhân. Ở concurrency 1, các request đi tuần tự nên các lần gọi mock chậm cũng kéo dài tổng thời gian.
+Concurrency 50 có throughput cao nhất trong lần đo. Khi tăng lên 100, throughput giảm từ 98.75 xuống 64.22 req/s và p50 tăng từ 212.6 lên 694.2 ms. Xu hướng này phù hợp với hiện tượng chờ dưới tải cao. Lần đo chưa xác định được thành phần gây chờ. Concurrency 1 và 100 trượt SLO do p95 vượt 500 ms.
 
 ### 2.2 Tail latency
 
@@ -122,8 +122,14 @@ Throughput tăng khoảng 33% và p95 giảm khoảng 55%. Số user và thời 
 
 ## 6. Kết luận
 
-1. SLO latency theo percentile cho thấy tác động của các request chậm mà mức trung bình có thể che đi.
-2. Benchmark chất lượng cần dataset cố định và baseline. Mã HTTP 200 chỉ nói request thành công ở tầng giao thức.
-3. Theo dõi RPS, latency, error rate và chi phí cùng lúc để đánh giá tác động của tăng tải hoặc thay model.
+**Ba điểm rút ra**
 
-Khi đưa agent vào vận hành, theo dõi lỗi và latency tại load balancer, chi phí theo model và tỷ lệ trả lời đúng theo mẫu câu hỏi thực tế.
+1. Đọc RPS, p95 và p99 cùng nhau. Concurrency 50 đạt cả hai SLO và có throughput cao nhất trong lần đo. Khi tăng từ một lên ba replica, p95 giảm từ 3800 xuống 1700 ms nhưng p99 vẫn ở 4600 ms.
+2. Chạy eval trên cùng golden dataset và so với baseline để phát hiện regression theo từng câu. Sau cập nhật, v2 đạt 23/23, không có regression và có chi phí mô phỏng 0.00003430 USD/câu đúng.
+3. Dùng cảnh báo để phát hiện bất thường, rồi nối trace với log qua `trace_id` để khoanh vùng. Trong trace chậm đã kiểm tra, span LLM chiếm 99.1% tổng thời gian.
+
+**Metric và cảnh báo cần thêm trên production**
+
+- Tỷ lệ `5xx` tại Nginx và cảnh báo khi ngân sách lỗi bị tiêu hao nhanh. Chỉ số này ghi nhận cả lỗi xảy ra trước khi request tới agent.
+- Tỷ lệ timeout và `429` từ nhà cung cấp LLM theo model, kèm cảnh báo khi tăng kéo dài.
+- Tỷ lệ câu trả lời đạt chuẩn trên mẫu traffic đã ẩn danh, kèm cảnh báo khi giảm so với baseline.
